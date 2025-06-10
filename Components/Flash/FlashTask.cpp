@@ -168,8 +168,7 @@ bool FlashTask::ReadLogDataFromFlash()
             AccelGyroMagnetismData* IMURead = (AccelGyroMagnetismData*)dataRead;
             SOAR_PRINT("%03d %08d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d\n",
                 length, IMURead->time, IMURead->accelX_, IMURead->accelY_, IMURead->accelZ_,
-                IMURead->gyroX_, IMURead->gyroY_, IMURead->gyroZ_, IMURead->magnetoX_,
-                IMURead->magnetoY_, IMURead->magnetoZ_);
+                IMURead->gyroX_, IMURead->gyroY_, IMURead->gyroZ_);
         }
         else if (length == sizeof(BarometerData)) {
             uint8_t dataRead[sizeof(BarometerData)];

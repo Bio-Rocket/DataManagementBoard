@@ -22,9 +22,6 @@ typedef struct
     int32_t     gyroX_;
     int32_t     gyroY_;
     int32_t     gyroZ_;
-    int32_t     magnetoX_;
-    int32_t     magnetoY_;
-    int32_t     magnetoZ_;
     int32_t     time;
 } AccelGyroMagnetismData;
 
