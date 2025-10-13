@@ -10,10 +10,8 @@
 #include "DMBProtocolTask.hpp"
 
 #include "BarometerTask.hpp"
-#include "IMUTask.hpp"
+//#include "IMUTask.hpp"
 #include "FlightTask.hpp"
-#include "PressureTransducerTask.hpp"
-#include "BatteryTask.hpp"
 #include "GPSTask.hpp"
 #include "WatchdogTask.hpp"
 
@@ -118,17 +116,13 @@ void TelemetryTask::RunLogSequence()
  */
 void TelemetryTask::RequestSample()
 {
-    // Battery
-    BatteryTask::Inst().SendCommand(Command(REQUEST_COMMAND, BATTERY_REQUEST_NEW_SAMPLE));
 
     // Barometer
     BarometerTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)BARO_REQUEST_NEW_SAMPLE));
 
     // IMU
-    IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_NEW_SAMPLE));
+    //IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_NEW_SAMPLE));
 
-    // Pressure Transducer
-    //PressureTransducerTask::Inst().SendCommand(Command(REQUEST_COMMAND, PT_REQUEST_NEW_SAMPLE));
 }
 
 /**
@@ -136,17 +130,12 @@ void TelemetryTask::RequestSample()
  */
 void TelemetryTask::RequestTransmit()
 {
-    // Battery
-    BatteryTask::Inst().SendCommand(Command(REQUEST_COMMAND, BATTERY_REQUEST_TRANSMIT));
 
     // Barometer
     BarometerTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)BARO_REQUEST_TRANSMIT));
 
     // IMU
-    IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_TRANSMIT));
-
-    // Pressure Transducer
-    //PressureTransducerTask::Inst().SendCommand(Command(REQUEST_COMMAND, PT_REQUEST_TRANSMIT));
+    //IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_TRANSMIT));
 
     // GPS
     GPSTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)GPS_REQUEST_TRANSMIT));
@@ -161,7 +150,7 @@ void TelemetryTask::RequestLogToFlash()
     BarometerTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)BARO_REQUEST_FLASH_LOG));
 
     // IMU
-    IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_FLASH_LOG));
+    //IMUTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)IMU_REQUEST_FLASH_LOG));
 
     // GPS
     GPSTask::Inst().SendCommand(Command(REQUEST_COMMAND, (uint16_t)GPS_REQUEST_FLASH_LOG));
@@ -176,9 +165,9 @@ void TelemetryTask::SendVentDrainStatus()
     teleMsg.set_source(Proto::Node::NODE_DMB);
     teleMsg.set_target(Proto::Node::NODE_RCU);
     Proto::CombustionControlStatus gpioMsg;
-    gpioMsg.set_drain_open(GPIO::Drain::IsOpen());
-    gpioMsg.set_vent_open(GPIO::Vent::IsOpen());
-    gpioMsg.set_mev_open(GPIO::_MAIN_ENGINE_VALVE::IsOpen());
+//    gpioMsg.set_drain_open(GPIO::Drain::IsOpen());
+//    gpioMsg.set_vent_open(GPIO::Vent::IsOpen());
+//    gpioMsg.set_mev_open(GPIO::_MAIN_ENGINE_VALVE::IsOpen());
     teleMsg.set_combustionControlStatus(gpioMsg);
 
     EmbeddedProto::WriteBufferFixedSize<DEFAULT_PROTOCOL_WRITE_BUFFER_SIZE> writeBuffer;

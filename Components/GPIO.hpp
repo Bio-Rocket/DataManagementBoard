@@ -44,39 +44,56 @@ namespace GPIO
         inline bool IsOn() { return HAL_GPIO_ReadPin(LED_3_GPIO_Port, LED_3_Pin) == GPIO_PIN_SET; }
     }
 
-    namespace _MAIN_ENGINE_VALVE // Main engine valve GPIO Open/Close should ONLY be touched by MEVManager
+    namespace SOL10 // Main engine valve GPIO Open/Close should ONLY be touched by MEVManager
     {
-        inline void Open() { HAL_GPIO_WritePin(LAUNCH_GPIO_Port, LAUNCH_Pin, GPIO_PIN_SET); }
-        inline void Close() { HAL_GPIO_WritePin(LAUNCH_GPIO_Port, LAUNCH_Pin, GPIO_PIN_RESET); }
+        inline void Open() { HAL_GPIO_WritePin(SOL_10_GPIO_Port, SOL_10_Pin, GPIO_PIN_SET); }
+        inline void Close() { HAL_GPIO_WritePin(SOL_10_GPIO_Port, SOL_10_Pin, GPIO_PIN_RESET); }
 
-        inline bool IsOpen() { return HAL_GPIO_ReadPin(LAUNCH_GPIO_Port, LAUNCH_Pin) == GPIO_PIN_SET; }
+        inline bool IsOpen() { return HAL_GPIO_ReadPin(SOL_10_GPIO_Port, SOL_10_Pin) == GPIO_PIN_SET; }
     }
 
 	
-	namespace Vent
+	namespace SOL11
 	{
-		inline void Open() { HAL_GPIO_WritePin(VENT_CONTROL_GPIO_Port, VENT_CONTROL_Pin, GPIO_PIN_RESET); }
-		inline void Close() { HAL_GPIO_WritePin(VENT_CONTROL_GPIO_Port, VENT_CONTROL_Pin, GPIO_PIN_SET); }
+		inline void Open() { HAL_GPIO_WritePin(SOL_11_GPIO_Port, SOL_11_Pin, GPIO_PIN_RESET); }
+		inline void Close() { HAL_GPIO_WritePin(SOL_11_GPIO_Port, SOL_11_Pin, GPIO_PIN_SET); }
 
-		inline bool IsOpen() { return HAL_GPIO_ReadPin(VENT_CONTROL_GPIO_Port, VENT_CONTROL_Pin) == GPIO_PIN_RESET; }
+		inline bool IsOpen() { return HAL_GPIO_ReadPin(SOL_11_GPIO_Port, SOL_11_Pin) == GPIO_PIN_RESET; }
 	}	
 
-	namespace Drain
-	{
-		inline void Open() { HAL_GPIO_WritePin(DRAIN_CONTROL_GPIO_Port, DRAIN_CONTROL_Pin, GPIO_PIN_RESET); }
-		inline void Close() { HAL_GPIO_WritePin(DRAIN_CONTROL_GPIO_Port, DRAIN_CONTROL_Pin, GPIO_PIN_SET); }
+    namespace SOL12
+    {
+        inline void Open() { HAL_GPIO_WritePin(SOL_12_GPIO_Port, SOL_12_Pin, GPIO_PIN_RESET); }
+        inline void Close() { HAL_GPIO_WritePin(SOL_12_GPIO_Port, SOL_12_Pin, GPIO_PIN_SET); }
 
-		inline bool IsOpen() { return HAL_GPIO_ReadPin(DRAIN_CONTROL_GPIO_Port, DRAIN_CONTROL_Pin) == GPIO_PIN_RESET; }
-	}	
+        inline bool IsOpen() { return HAL_GPIO_ReadPin(SOL_12_GPIO_Port, SOL_12_Pin) == GPIO_PIN_RESET; }
+    }
 
-	namespace PowerSelect
-	{
-		inline void InternalPower() { HAL_GPIO_WritePin(BATTERY_EN_GPIO_Port, BATTERY_EN_Pin, GPIO_PIN_SET); }
-		inline void UmbilicalPower() { HAL_GPIO_WritePin(BATTERY_EN_GPIO_Port, BATTERY_EN_Pin, GPIO_PIN_RESET); }
-		inline void Toggle() { HAL_GPIO_TogglePin(BATTERY_EN_GPIO_Port, BATTERY_EN_Pin); }
-		
-		inline bool IsInternal() { return HAL_GPIO_ReadPin(BATTERY_EN_GPIO_Port, BATTERY_EN_Pin) == GPIO_PIN_SET; }
-	}
+    namespace SOL13
+    {
+        inline void Open() { HAL_GPIO_WritePin(SOL_13_GPIO_Port, SOL_13_Pin, GPIO_PIN_RESET); }
+        inline void Close() { HAL_GPIO_WritePin(SOL_13_GPIO_Port, SOL_13_Pin, GPIO_PIN_SET); }
+
+        inline bool IsOpen() { return HAL_GPIO_ReadPin(SOL_13_GPIO_Port, SOL_13_Pin) == GPIO_PIN_RESET; }
+    }
+
+    namespace SOL14
+    {
+        inline void Open() { HAL_GPIO_WritePin(SOL_14_GPIO_Port, SOL_14_Pin, GPIO_PIN_RESET); }
+        inline void Close() { HAL_GPIO_WritePin(SOL_14_GPIO_Port, SOL_14_Pin, GPIO_PIN_SET); }
+
+        inline bool IsOpen() { return HAL_GPIO_ReadPin(SOL_14_GPIO_Port, SOL_14_Pin) == GPIO_PIN_RESET; }
+    }
+
+    namespace ABORT
+    {
+        inline void Open() { HAL_GPIO_WritePin(ABORT_GPIO_Port, ABORT_Pin, GPIO_PIN_RESET); }
+        inline void Close() { HAL_GPIO_WritePin(ABORT_GPIO_Port, ABORT_Pin, GPIO_PIN_SET); }
+
+        inline bool IsActive() { return HAL_GPIO_ReadPin(ABORT_GPIO_Port, ABORT_Pin) == GPIO_PIN_RESET; }
+    }
+
+
 }
 
 #endif /* AVIONICS_INCLUDE_SOAR_CORE_GPIO_H */

@@ -60,11 +60,16 @@ enum RocketControlCommands
 
     //-- PRE-IGNITION and RECOVERY --
     RSC_ANY_TO_ABORT,       // Transition to ABORT state - available from all states except for IGNITION/LAUNCH/BURN
-    RSC_OPEN_VENT,   // Open the vent valve
-    RSC_CLOSE_VENT,  // Close the vent valve
-    RSC_OPEN_DRAIN,  // Open the drain valve
-    RSC_CLOSE_DRAIN, // Close the drain valve
-    RSC_MEV_CLOSE,   // Forces MEV to close - ONLY supported in states where it is safe to close the MEV
+    RSC_OPEN_SOL_10,   // Open SOL 10
+    RSC_CLOSE_SOL_10,  // Close SOL 10
+    RSC_OPEN_SOL_11,   // Open SOL 11
+    RSC_CLOSE_SOL_11,  // Close SOL 11
+    RSC_OPEN_SOL_12,   // Open SOL 12
+    RSC_CLOSE_SOL_12,  // Close SOL 12
+    RSC_OPEN_SOL_13,   // Open SOL 13
+    RSC_CLOSE_SOL_13,  // Close SOL 13
+    RSC_OPEN_SOL_14,   // Open SOL 14
+    RSC_CLOSE_SOL_14,  // Close SOL 14
 
     //-- PRELAUNCH --
     RSC_GOTO_FILL, // Transition to the FILL state
@@ -112,9 +117,6 @@ enum RocketControlCommands
     //-- TEST --
     RSC_GOTO_TEST,
     //RSC_MEV_CLOSE,
-    RSC_TEST_MEV_OPEN,
-    RSC_TEST_MEV_ENABLE,
-    RSC_TEST_MEV_DISABLE,
     //RSC_GOTO_PRELAUNCH
 
     //-- TECHNICAL --

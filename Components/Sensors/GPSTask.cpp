@@ -204,7 +204,7 @@ void GPSTask::HandleRequestCommand(uint16_t taskCommand)
  */
 bool GPSTask::ReceiveData()
 {
-    HAL_UART_Receive_DMA(SystemHandles::UART_GPS, (uint8_t*)&gpsTaskRxBuffer, GPS_TASK_RX_BUFFER_SIZE);
+    HAL_UART_Receive_DMA(SystemHandles::GPS_UART, (uint8_t*)&gpsTaskRxBuffer, GPS_TASK_RX_BUFFER_SIZE);
     return true;
 }
 

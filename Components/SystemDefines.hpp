@@ -36,7 +36,6 @@
 constexpr uint32_t TELEMETRY_DEFAULT_LOGGING_RATE_MS = 100; // Default logging delay for telemetry task
 constexpr uint32_t TELEMETRY_MINIMUM_LOG_PERIOD_MS = 20; // (1000/20 = 50hz) The minimum log period / max log rate
 
-
 /* Task Definitions ------------------------------------------------------------------*/
 /* - Lower priority number means lower priority task ---------------------------------*/
 
@@ -50,8 +49,11 @@ constexpr uint16_t FLIGHT_PHASE_DISPLAY_FREQ = 1000;    // Display frequency for
 // DMB PROTOCOL TASK
 constexpr uint16_t DMB_PROTOCOL_TASK_PRIORITY = 4;     // Priority of DMB protocol task (Rx from Ground Systems)
 
-// PBB PROTOCOL TASK
-constexpr uint16_t PBB_PROTOCOL_TASK_PRIORITY = 3;     // Priority of PBB protocol task (Rx from Plumbing Bay Board)
+// UPPER PBB PROTOCOL TASK
+constexpr uint16_t U_PBB_PROTOCOL_TASK_PRIORITY = 3;     // Priority of U_PBB protocol task (Rx from Upper Plumbing Bay Board)
+
+// LOWER PBB PROTOCOL TASK
+constexpr uint16_t L_PBB_PROTOCOL_TASK_PRIORITY = 3;     // Priority of L_PBB protocol task (Rx from Lower Plumbing Bay Board)
 
 // UART TASK
 constexpr uint8_t UART_TASK_RTOS_PRIORITY = 3;            // Priority of the uart task
@@ -68,15 +70,15 @@ constexpr uint8_t TASK_BAROMETER_PRIORITY = 2;            // Priority of the bar
 constexpr uint8_t TASK_BAROMETER_QUEUE_DEPTH_OBJS = 10;        // Size of the barometer task queue
 constexpr uint16_t TASK_BAROMETER_STACK_DEPTH_WORDS = 512;        // Size of the barometer task stack
 
-// IMU TASK (ACCEL/GYRO/MAGNETO)
-constexpr uint8_t TASK_IMU_PRIORITY = 2;            // Priority of the barometer task
-constexpr uint8_t TASK_IMU_QUEUE_DEPTH_OBJS = 10;        // Size of the barometer task queue
-constexpr uint16_t TASK_IMU_STACK_DEPTH_WORDS = 512;        // Size of the barometer task stack
+// IMU TASK (ACCEL/GYRO)
+constexpr uint8_t TASK_IMU_PRIORITY = 2;            // Priority of the IMU task
+constexpr uint8_t TASK_IMU_QUEUE_DEPTH_OBJS = 10;        // Size of the IMU task queue
+constexpr uint16_t TASK_IMU_STACK_DEPTH_WORDS = 512;        // Size of the IMU task stack
 
 // GPS TASK
-constexpr uint8_t TASK_GPS_PRIORITY = 2;            // Priority of the barometer task
-constexpr uint8_t TASK_GPS_QUEUE_DEPTH_OBJS = 10;        // Size of the barometer task queue
-constexpr uint16_t TASK_GPS_STACK_DEPTH_WORDS = 896;        // Size of the barometer task stack
+constexpr uint8_t TASK_GPS_PRIORITY = 2;            // Priority of the GPS task
+constexpr uint8_t TASK_GPS_QUEUE_DEPTH_OBJS = 10;        // Size of the GPS task queue
+constexpr uint16_t TASK_GPS_STACK_DEPTH_WORDS = 896;        // Size of the GPS task stack
 
 // FLASH Task
 constexpr uint8_t FLASH_TASK_RTOS_PRIORITY = 2;            // Priority of the flash task

@@ -60,10 +60,6 @@ static uint8_t SET_ACCEL_SCALE_CMD = XL6_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
 // 011 01 0 00 -> ODR 119, +/- 16G
 static uint8_t SET_ACCEL_SCALE_DATA = 0x68;
 
-static uint8_t ACTIVATE_MAGNETO_CMD = M3_CTRL_REGISTER_ADDR | WRITE_CMD_MASK;
-// 1 0 0 00 0 00 -> I2C Disable, Low power mode disabled, SPI write enable, Continuous-conversion mode
-static uint8_t ACTIVATE_MAGNETO_DATA = 0x80;
-
 static uint8_t READ_GYRO_X_G_LOW_CMD = GYRO_X_G_LOW_REGISTER_ADDR | READ_CMD_MASK | ACCEL_GYRO_MASK;
 static uint8_t READ_ACCEL_X_LOW_CMD = ACCEL_X_LOW_REGISTER_ADDR | READ_CMD_MASK | ACCEL_GYRO_MASK;
 static uint8_t READ_MAGNETO_X_LOW_CMD = MAGNETO_X_LOW_REGISTER_ADDR | READ_CMD_MASK | MAGNETO_MASK;
@@ -176,7 +172,6 @@ void IMUTask::HandleRequestCommand(uint16_t taskCommand)
         SOAR_PRINT("\t-- IMU Data --\n");
         SOAR_PRINT(" Accel (x,y,z) : (%d, %d, %d) milli-Gs\n", data->accelX_, data->accelY_, data->accelZ_);
         SOAR_PRINT(" Gyro (x,y,z)  : (%d, %d, %d) milli-deg/s\n", data->gyroX_, data->gyroY_, data->gyroZ_);
-        SOAR_PRINT(" Mag (x,y,z)   : (%d, %d, %d) milli-gauss\n", data->magnetoX_, data->magnetoY_, data->magnetoZ_);
         break;
     default:
         SOAR_PRINT("IMUTask - Received Unsupported REQUEST_COMMAND {%d}\n", taskCommand);
@@ -202,9 +197,6 @@ void IMUTask::TransmitProtocolData()
     imuData.set_gyro_x(data->gyroX_);
     imuData.set_gyro_y(data->gyroY_);
     imuData.set_gyro_z(data->gyroZ_);
-    imuData.set_mag_x(data->magnetoX_);
-    imuData.set_mag_y(data->magnetoY_);
-    imuData.set_mag_z(data->magnetoZ_);
     msg.set_imu(imuData);
 
     EmbeddedProto::WriteBufferFixedSize<DEFAULT_PROTOCOL_WRITE_BUFFER_SIZE> writeBuffer;
@@ -227,100 +219,83 @@ void IMUTask::LogDataToFlash()
 /**
  * @brief This function reads and updates the IMU data
  */
-void IMUTask::SampleIMU()
-{
-    //Storable data
-    uint8_t dataBuffer[6];
-    int16_t accelX, accelY, accelZ;
-    int16_t gyroX, gyroY, gyroZ;
-    int16_t magnetoX, magnetoY, magnetoZ;
-
-    data->time = TICKS_TO_MS(xTaskGetTickCount()); // ms
-
-    //READ------------------------------------------------------
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(SystemHandles::SPI_IMU, &dataBuffer[0], 6, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-    gyroX = (dataBuffer[1] << 8) | (dataBuffer[0]);
-    gyroY = (dataBuffer[3] << 8) | (dataBuffer[2]);
-    gyroZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
-
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_ACCEL_X_LOW_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(SystemHandles::SPI_IMU, &dataBuffer[0], 6, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-    accelX = (dataBuffer[1] << 8) | (dataBuffer[0]);
-    accelY = (dataBuffer[3] << 8) | (dataBuffer[2]);
-    accelZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
-
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_MAGNETO_X_LOW_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(SystemHandles::SPI_IMU, &dataBuffer[0], 6, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_SET);
-    magnetoX = (dataBuffer[1] << 8) | (dataBuffer[0]);
-    magnetoY = (dataBuffer[3] << 8) | (dataBuffer[2]);
-    magnetoZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
-
-    // Write to storage
-    data->accelX_ = accelX * ACCEL_SENSITIVITY; // mg
-    data->accelY_ = accelY * ACCEL_SENSITIVITY; // mg
-    data->accelZ_ = accelZ * ACCEL_SENSITIVITY; // mg
-    data->gyroX_ = gyroX * GYRO_SENSITIVITY; // mdps
-    data->gyroY_ = gyroY * GYRO_SENSITIVITY; // mdps
-    data->gyroZ_ = gyroZ * GYRO_SENSITIVITY; // mdps
-    data->magnetoX_ = magnetoX * MAGENTO_SENSITIVITY; // mgauss
-    data->magnetoY_ = magnetoY * MAGENTO_SENSITIVITY; // mgauss
-    data->magnetoZ_ = magnetoZ * MAGENTO_SENSITIVITY; // mgauss
-}
-
-/**
- * @brief Sets up IMU
- * @return WHOAMI_M register value if read
- */
-uint8_t IMUTask::SetupIMU()
-{
-    /* Setup the Accel / Gyro */
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &ACTIVATE_GYRO_ACCEL_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &ACTIVATE_GYRO_ACCEL_DATA, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &SET_ACCEL_SCALE_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &SET_ACCEL_SCALE_DATA, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-
-    /* Read WHO AM I register for verification, should read 104. */
-    uint8_t whoami = 0xDE;
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_WHOAMI_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(SystemHandles::SPI_IMU, &whoami, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
-
-    /* Setup the Magnetometer */
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &ACTIVATE_MAGNETO_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &ACTIVATE_MAGNETO_DATA, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_SET);
-
-    /* Read WHO AM I MAG register for verification, should read 61. */
-    uint8_t whoami_m = 0xDE;
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(SystemHandles::SPI_IMU, &READ_WHOAMIM_CMD, 1, CMD_TIMEOUT);
-    HAL_SPI_Receive(SystemHandles::SPI_IMU, &whoami_m, 1, CMD_TIMEOUT);
-    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_SET);
-
-    /* Verify the two WHOAMI registers */
-    if(whoami != 104)
-        SOAR_PRINT("Non-Fatal-Warning: IMU WHOAMI failed   [%d]\n", whoami);
-    if (whoami_m != 61)
-        SOAR_PRINT("Non-Fatal-Warning: IMU WHOAMI_M failed [%d]\n", whoami_m);
-
-
-    return whoami;
-}
+//void IMUTask::SampleIMU()
+//{
+//    //Storable data
+//    uint8_t dataBuffer[6];
+//    int16_t accelX, accelY, accelZ;
+//    int16_t gyroX, gyroY, gyroZ;
+//    int16_t magnetoX, magnetoY, magnetoZ;
+//
+//    data->time = TICKS_TO_MS(xTaskGetTickCount()); // ms
+//
+//    //READ------------------------------------------------------
+//    //HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+//    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
+//    HAL_SPI_Receive(SystemHandles::IMU_SPI, &dataBuffer[0], 6, CMD_TIMEOUT);
+//    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+//    gyroX = (dataBuffer[1] << 8) | (dataBuffer[0]);
+//    gyroY = (dataBuffer[3] << 8) | (dataBuffer[2]);
+//    gyroZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
+//
+//    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+//    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &READ_ACCEL_X_LOW_CMD, 1, CMD_TIMEOUT);
+//    HAL_SPI_Receive(SystemHandles::IMU_SPI, &dataBuffer[0], 6, CMD_TIMEOUT);
+//    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+//    accelX = (dataBuffer[1] << 8) | (dataBuffer[0]);
+//    accelY = (dataBuffer[3] << 8) | (dataBuffer[2]);
+//    accelZ = (dataBuffer[5] << 8) | (dataBuffer[4]);
+//
+//    // Write to storage
+//    data->accelX_ = accelX * ACCEL_SENSITIVITY; // mg
+//    data->accelY_ = accelY * ACCEL_SENSITIVITY; // mg
+//    data->accelZ_ = accelZ * ACCEL_SENSITIVITY; // mg
+//    data->gyroX_ = gyroX * GYRO_SENSITIVITY; // mdps
+//    data->gyroY_ = gyroY * GYRO_SENSITIVITY; // mdps
+//    data->gyroZ_ = gyroZ * GYRO_SENSITIVITY; // mdps
+//}
+//
+///**
+// * @brief Sets up IMU
+// * @return WHOAMI_M register value if read
+// */
+//uint8_t IMUTask::SetupIMU()
+//{
+//    /* Setup the Accel / Gyro */
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &READ_GYRO_X_G_LOW_CMD, 1, CMD_TIMEOUT);
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+//
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &ACTIVATE_GYRO_ACCEL_CMD, 1, CMD_TIMEOUT);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &ACTIVATE_GYRO_ACCEL_DATA, 1, CMD_TIMEOUT);
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+////
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &SET_ACCEL_SCALE_CMD, 1, CMD_TIMEOUT);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &SET_ACCEL_SCALE_DATA, 1, CMD_TIMEOUT);
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+////
+////    /* Read WHO AM I register for verification, should read 104. */
+////    uint8_t whoami = 0xDE;
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_RESET);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &READ_WHOAMI_CMD, 1, CMD_TIMEOUT);
+////    HAL_SPI_Receive(SystemHandles::IMU_SPI, &whoami, 1, CMD_TIMEOUT);
+////    HAL_GPIO_WritePin(IMU_XL_GY_CS_GPIO_Port, IMU_XL_GY_CS_Pin, GPIO_PIN_SET);
+//
+//    /* Read WHO AM I MAG register for verification, should read 61. */
+////    uint8_t whoami_m = 0xDE;
+////    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_RESET);
+////    HAL_SPI_Transmit(SystemHandles::IMU_SPI, &READ_WHOAMIM_CMD, 1, CMD_TIMEOUT);
+////    HAL_SPI_Receive(SystemHandles::IMU_SPI, &whoami_m, 1, CMD_TIMEOUT);
+////    HAL_GPIO_WritePin(IMU_MAG_CS_GPIO_Port, IMU_MAG_CS_Pin, GPIO_PIN_SET);
+//
+//    /* Verify the two WHOAMI registers */
+//    if(whoami != 104)
+//        SOAR_PRINT("Non-Fatal-Warning: IMU WHOAMI failed   [%d]\n", whoami);
+//    if (whoami_m != 61)
+//        SOAR_PRINT("Non-Fatal-Warning: IMU WHOAMI_M failed [%d]\n", whoami_m);
+//
+//
+//    return whoami;
+//}

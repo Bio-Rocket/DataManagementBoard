@@ -67,21 +67,6 @@ void DMBProtocolTask::HandleProtobufCommandMessage(EmbeddedProto::ReadBufferFixe
     case Proto::DmbCommand::Command::RSC_ANY_TO_ABORT:
         FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_ANY_TO_ABORT));
         break;
-    case Proto::DmbCommand::Command::RSC_OPEN_VENT:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_OPEN_VENT));
-        break;
-    case Proto::DmbCommand::Command::RSC_CLOSE_VENT:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_CLOSE_VENT));
-        break;
-    case Proto::DmbCommand::Command::RSC_OPEN_DRAIN:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_OPEN_DRAIN));
-        break;
-    case Proto::DmbCommand::Command::RSC_CLOSE_DRAIN:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_CLOSE_DRAIN));
-        break;
-    case Proto::DmbCommand::Command::RSC_MEV_CLOSE:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_MEV_CLOSE));
-        break;
     case Proto::DmbCommand::Command::RSC_GOTO_FILL:
         FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_GOTO_FILL));
         break;
@@ -109,15 +94,6 @@ void DMBProtocolTask::HandleProtobufCommandMessage(EmbeddedProto::ReadBufferFixe
     case Proto::DmbCommand::Command::RSC_IGNITION_TO_LAUNCH: // This is the ignition confirmation (we need a button to send this)
         FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_IGNITION_TO_LAUNCH));
         break;
-    case Proto::DmbCommand::Command::RSC_TEST_MEV_DISABLE:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_TEST_MEV_DISABLE));
-        break;
-    case Proto::DmbCommand::Command::RSC_TEST_MEV_ENABLE:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_TEST_MEV_ENABLE));
-        break;
-    case Proto::DmbCommand::Command::RSC_TEST_MEV_OPEN:
-        FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_TEST_MEV_OPEN));
-        break;
     case Proto::DmbCommand::Command::RSC_GOTO_TEST:
         FlightTask::Inst().SendCommand(Command(CONTROL_ACTION, (uint16_t)RSC_GOTO_TEST));
         break;
@@ -136,7 +112,7 @@ void DMBProtocolTask::HandleProtobufControlMesssage(EmbeddedProto::ReadBufferFix
     msg.deserialize(readBuffer);
 
     // Verify the source and target nodes, if they aren't as expected, do nothing
-    if (msg.get_source() != Proto::Node::NODE_RCU || msg.get_target() != Proto::Node::NODE_DMB)
+    if (msg.get_source() != Proto::Node::NODE_GSE || msg.get_target() != Proto::Node::NODE_DMB)
         return;
 
     // Handle based on the message type

@@ -165,11 +165,11 @@ bool FlashTask::ReadLogDataFromFlash()
         if (length == sizeof(AccelGyroMagnetismData)) {
             uint8_t dataRead[sizeof(AccelGyroMagnetismData)];
             W25qxx_ReadBytes(dataRead, SPI_FLASH_LOGGING_STORAGE_START_ADDR + i + 1, sizeof(AccelGyroMagnetismData));
-            AccelGyroMagnetismData* IMURead = (AccelGyroMagnetismData*)dataRead;
-            SOAR_PRINT("%03d %08d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d\n",
-                length, IMURead->time, IMURead->accelX_, IMURead->accelY_, IMURead->accelZ_,
-                IMURead->gyroX_, IMURead->gyroY_, IMURead->gyroZ_, IMURead->magnetoX_,
-                IMURead->magnetoY_, IMURead->magnetoZ_);
+            //AccelGyroMagnetismData* IMURead = (AccelGyroMagnetismData*)dataRead;
+//            SOAR_PRINT("%03d %08d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d   %04d\n",
+//                length, IMURead->time, IMURead->accelX_, IMURead->accelY_, IMURead->accelZ_,
+//                IMURead->gyroX_, IMURead->gyroY_, IMURead->gyroZ_, IMURead->magnetoX_,
+//                IMURead->magnetoY_, IMURead->magnetoZ_);
         }
         else if (length == sizeof(BarometerData)) {
             uint8_t dataRead[sizeof(BarometerData)];

@@ -22,9 +22,6 @@ typedef struct
     int32_t     gyroX_;
     int32_t     gyroY_;
     int32_t     gyroZ_;
-    int32_t     magnetoX_;
-    int32_t     magnetoY_;
-    int32_t     magnetoZ_;
     int32_t     time;
 } AccelGyroMagnetismData;
 
@@ -34,16 +31,6 @@ typedef struct
     int32_t     temperature_;
     int32_t     time;
 } BarometerData;
-
-typedef struct
-{
-    int32_t     pressure_1;
-} PressureTransducerData;
-
-typedef struct
-{
-    int32_t     voltage_; // Volts * 1000, eg. 3300 == 3.3V
-} BatteryData;
 
 /* GPS Data */
 
@@ -72,7 +59,6 @@ typedef struct
     AltitudeType    totalAltitude_;
 } GpsData;
 
-
 /* Data Containers */
 
 /*
@@ -84,14 +70,6 @@ typedef struct
     AccelGyroMagnetismData*         accelGyroMagnetismData_;
     BarometerData*                  barometerData_;
     GpsData*                        gpsData_;
-    PressureTransducerData* 		pressureTransducerData_;
-    BatteryData*       				batteryData_;
 } AllData;
-
-typedef struct
-{
-    AccelGyroMagnetismData* accelGyroMagnetismData_;
-    BarometerData*          barometerData_;
-} ParachutesControlData;
 
 #endif //AVIONICS_INCLUDE_SOAR_DATA_H

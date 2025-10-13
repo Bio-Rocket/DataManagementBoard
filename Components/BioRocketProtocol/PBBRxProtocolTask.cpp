@@ -9,7 +9,6 @@
 #include "ReadBufferFixedSize.h"
 #include "TelemetryMessage.hpp"
 #include "UARTTask.hpp"
-#include "MEVManager.hpp"
 
 /**
  * @brief Initialize the PBBRxProtocolTask
@@ -25,7 +24,7 @@ void PBBRxProtocolTask::InitTask()
             (const char*)"PbbProtocol",
             (uint16_t)TASK_PROTOCOL_STACK_DEPTH_WORDS,
             (void*)this,
-            (UBaseType_t)PBB_PROTOCOL_TASK_PRIORITY,
+            (UBaseType_t)L_PBB_PROTOCOL_TASK_PRIORITY,
             (TaskHandle_t*)&rtTaskHandle);
 
     //Ensure creation succeded
@@ -37,7 +36,7 @@ void PBBRxProtocolTask::InitTask()
  */
 PBBRxProtocolTask::PBBRxProtocolTask() : ProtocolTask(
     Proto::Node::NODE_DMB,
-    UART::Conduit_PBB,
+    UART::Lower_PBB,
     UART_TASK_COMMAND_SEND_PBB)
 {
 }
@@ -67,7 +66,7 @@ void PBBRxProtocolTask::HandleProtobufTelemetryMessage(EmbeddedProto::ReadBuffer
     msg.deserialize(readBuffer);
 
     // Verify the source node is the PBB
-    if (msg.get_source() != Proto::Node::NODE_PBB) {
+    if (msg.get_source() != Proto::Node::NODE_LPBB) {
         return;
     }
 

@@ -34,7 +34,7 @@ public:
         Proto::CommandMessage cmdMsg;
         Proto::PbbCommand pbbCmd;
         cmdMsg.set_source(Proto::Node::NODE_DMB);
-        cmdMsg.set_target(Proto::Node::NODE_PBB);
+        cmdMsg.set_target(Proto::Node::NODE_LPBB);
         pbbCmd.set_command_enum(cmd);
         cmdMsg.set_pbb_command(pbbCmd);
         EmbeddedProto::WriteBufferFixedSize<DEFAULT_PROTOCOL_WRITE_BUFFER_SIZE> writeBuffer;
@@ -47,7 +47,7 @@ public:
         Proto::ControlMessage ctrlMsg;
         Proto::FastLog fastLogCmd;
         ctrlMsg.set_source(Proto::Node::NODE_DMB);
-        ctrlMsg.set_target(Proto::Node::NODE_PBB);
+        ctrlMsg.set_target(Proto::Node::NODE_LPBB);
         fastLogCmd.set_cmd(cmd);
         ctrlMsg.set_fast_log(fastLogCmd);
         EmbeddedProto::WriteBufferFixedSize<DEFAULT_PROTOCOL_WRITE_BUFFER_SIZE> writeBuffer;

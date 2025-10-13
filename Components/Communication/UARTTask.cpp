@@ -79,7 +79,7 @@ void UARTTask::HandleCommand(Command& cm)
             UART::Radio->Transmit(cm.GetDataPointer(), cm.GetDataSize());
         	break;
         case UART_TASK_COMMAND_SEND_PBB:
-            UART::Conduit_PBB->Transmit(cm.GetDataPointer(), cm.GetDataSize());
+            UART::Upper_PBB->Transmit(cm.GetDataPointer(), cm.GetDataSize());
             osDelay(1);
             break;
         default:

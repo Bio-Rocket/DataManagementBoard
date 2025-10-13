@@ -17,17 +17,14 @@
 
 // External Tasks (to send debug commands to)
 #include "BarometerTask.hpp"
-#include "IMUTask.hpp"
+//#include "IMUTask.hpp"
 #include "DMBProtocolTask.hpp"
 #include "PBBRxProtocolTask.hpp"
 #include "WatchdogTask.hpp"
 #include "TimerTransitions.hpp"
-#include "PressureTransducerTask.hpp"
-#include "BatteryTask.hpp"
 #include "GPSTask.hpp"
 #include "FlashTask.hpp"
 #include "HDITask.hpp"
-#include "MEVManager.hpp"
 
 /* Macros --------------------------------------------------------------------*/
 
@@ -48,7 +45,7 @@ constexpr uint8_t DEBUG_TASK_PERIOD = 100;
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
-    if (huart->Instance == SystemHandles::UART_GPS->Instance)
+    if (huart->Instance == SystemHandles::GPS_UART->Instance)
         GPSTask::Inst().HandleGPSRxComplete();
 }
 
@@ -166,19 +163,6 @@ void DebugTask::HandleDebugMessage(const char* msg)
         Command cmd2(REQUEST_COMMAND, BARO_REQUEST_DEBUG);
         BarometerTask::Inst().GetEventQueue()->Send(cmd2);
     }
-    else if (strcmp(msg, "imu") == 0) {
-        // Send a request to the IMU task to poll and print the data
-        SOAR_PRINT("Debug 'IMU Poll+Read' command requested\n");
-        Command cmd(REQUEST_COMMAND, IMU_REQUEST_NEW_SAMPLE);
-        IMUTask::Inst().GetEventQueue()->Send(cmd);
-        Command cmd2(REQUEST_COMMAND, IMU_REQUEST_DEBUG);
-        IMUTask::Inst().GetEventQueue()->Send(cmd2);
-    }
-    else if (strcmp(msg, "bat") == 0) {
- 		SOAR_PRINT("Debug 'Battery Voltage' Sample and Output Received\n");
- 		BatteryTask::Inst().SendCommand(Command(REQUEST_COMMAND, BATTERY_REQUEST_NEW_SAMPLE));
- 		BatteryTask::Inst().SendCommand(Command(REQUEST_COMMAND, BATTERY_REQUEST_DEBUG));
- 	}
     else if (strcmp(msg, "flashdump") == 0) {
         // Send a request to the flash task to dump the flash data
         SOAR_PRINT("Dump of sensor data in flash requested\n");
@@ -197,56 +181,41 @@ void DebugTask::HandleDebugMessage(const char* msg)
     else if (strcmp(msg, "disablehb") == 0) {
         WatchdogTask::Inst().SendCommand(Command(HEARTBEAT_COMMAND, RADIOHB_DISABLED));
     }
-    else if (strcmp(msg, "mev close.warn") == 0) {
-    	SOAR_PRINT("MEV Close via Debug Not Permitted\n");
-    }
-    else if (strcmp(msg, "mev open.warn") == 0) {
-        SOAR_PRINT("MEV Open via Debug Not Permitted\n");
-    }
-    else if (strcmp(msg, "ptc") == 0) {
-		SOAR_PRINT("Debug 'Pressure Transducer' Sample and Output Received\n");
-		PressureTransducerTask::Inst().SendCommand(Command(REQUEST_COMMAND, PT_REQUEST_NEW_SAMPLE));
-		PressureTransducerTask::Inst().SendCommand(Command(REQUEST_COMMAND, PT_REQUEST_DEBUG));
-	}
     else if (strcmp(msg, "gps") == 0) {
     	GPSTask::Inst().SendCommand(Command(REQUEST_COMMAND, GPS_REQUEST_DEBUG));
     }
     else if (strcmp(msg, "gpstransmit") == 0) {
 		GPSTask::Inst().SendCommand(Command(REQUEST_COMMAND, GPS_REQUEST_TRANSMIT));
 	}
-    else if (strcmp(msg, "vent open") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        GPIO::Vent::Open();
+    else if (strcmp(msg, "sol10 open") == 0) {
+        GPIO::SOL10::Open();
     }
-    else if (strcmp(msg, "vent close") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        GPIO::Vent::Close();
+    else if (strcmp(msg, "sol10 close") == 0) {
+        GPIO::SOL10::Close();
     }
-    else if (strcmp(msg, "drain open") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        GPIO::Drain::Open();
+    else if (strcmp(msg, "sol11 open") == 0) {
+        GPIO::SOL11::Open();
     }
-    else if (strcmp(msg, "drain close") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        GPIO::Drain::Close();
+    else if (strcmp(msg, "sol11 close") == 0) {
+        GPIO::SOL11::Close();
     }
-    else if (strcmp(msg, "vent state") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        if(GPIO::Vent::IsOpen() == 1) {
-            SOAR_PRINT("Vent State : OPEN \n");
-        }
-        else if (GPIO::Vent::IsOpen() == 0) {
-            SOAR_PRINT("Vent State : CLOSED \n");
-        }
+    else if (strcmp(msg, "sol12 open") == 0) {
+        GPIO::SOL12::Open();
     }
-    else if (strcmp(msg, "drain state") == 0) {
-        //TODO: Remember to remove / make sure not enabled in final code
-        if(GPIO::Drain::IsOpen() == 1) {
-            SOAR_PRINT("Drain State : OPEN \n");
-        }
-        else if (GPIO::Drain::IsOpen() == 0) {
-            SOAR_PRINT("Drain State : CLOSED \n");
-        }
+    else if (strcmp(msg, "sol12 close") == 0) {
+        GPIO::SOL12::Close();
+    }
+    else if (strcmp(msg, "sol13 open") == 0) {
+        GPIO::SOL13::Open();
+    }
+    else if (strcmp(msg, "sol13 close") == 0) {
+        GPIO::SOL13::Close();
+    }
+    else if (strcmp(msg, "sol14 open") == 0) {
+        GPIO::SOL14::Open();
+    }
+    else if (strcmp(msg, "sol14 close") == 0) {
+        GPIO::SOL14::Close();
     }
     else if(strcmp(msg, "mute") == 0) {
         HDITask::Inst().SendCommand(Command(TASK_SPECIFIC_COMMAND, HDITaskCommands::MUTE));

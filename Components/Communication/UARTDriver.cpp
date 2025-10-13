@@ -20,7 +20,9 @@ namespace Driver {
     UARTDriver uart1(USART1);
     UARTDriver uart2(USART2);
     UARTDriver uart3(USART3);
-	UARTDriver uart5(UART5);
+    UARTDriver uart4(UART4);
+   // UARTDriver uart5(USART5);
+    UARTDriver uart6(USART6);
 }
 
 /**

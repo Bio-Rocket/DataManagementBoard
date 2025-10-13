@@ -104,7 +104,7 @@ void WatchdogTask::HandleHeartbeat(uint16_t taskCommand)
  */
 void WatchdogTask::Run(void * pvParams)
 {
-    uint32_t tempSecondCounter = 0; // TODO: Temporary counter, would normally be in HeartBeat task or HID Task, unless FlightTask is the HeartBeat task
+    //uint32_t tempSecondCounter = 0; // TODO: Temporary counter, would normally be in HeartBeat task or HID Task, unless FlightTask is the HeartBeat task
     GPIO::LED1::Off();
 
     heartbeatTimer = new Timer(HeartbeatFailureCallback);

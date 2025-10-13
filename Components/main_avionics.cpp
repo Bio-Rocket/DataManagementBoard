@@ -18,17 +18,15 @@
 // Tasks
 #include "UARTTask.hpp"
 #include "FlightTask.hpp"
-#include "FlashTask.hpp"
+//#include "FlashTask.hpp"
 #include "DebugTask.hpp"
 #include "BarometerTask.hpp"
-#include "IMUTask.hpp"
+//#include "IMUTask.hpp"
 #include "DMBProtocolTask.hpp"
 #include "WatchdogTask.hpp"
 #include "HDITask.hpp"
 #include "TelemetryTask.hpp"
 #include "PBBRxProtocolTask.hpp"
-#include "PressureTransducerTask.hpp"
-#include "BatteryTask.hpp"
 #include "GPSTask.hpp"
 
 /* Global Variables ------------------------------------------------------------------*/
@@ -45,18 +43,16 @@ void run_main() {
     UARTTask::Inst().InitTask();
     DebugTask::Inst().InitTask();
     BarometerTask::Inst().InitTask();
-    IMUTask::Inst().InitTask();
+    //IMUTask::Inst().InitTask();
     HDITask::Inst().InitTask();
     DMBProtocolTask::Inst().InitTask();
     PBBRxProtocolTask::Inst().InitTask();
-    TelemetryTask::Inst().InitTask();
-    PressureTransducerTask::Inst().InitTask();
-    BatteryTask::Inst().InitTask();
+    //TelemetryTask::Inst().InitTask();
     GPSTask::Inst().InitTask();
-    FlashTask::Inst().InitTask();
+    //FlashTask::Inst().InitTask();
 
     // Print System Boot Info : Warning, don't queue more than 10 prints before scheduler starts
-    SOAR_PRINT("\n-- SOAR AVIONICS --\n");
+    SOAR_PRINT("\n-- BIOROCKET AVIONICS --\n");
     SOAR_PRINT("System Reset Reason: [TODO]\n"); //TODO: If we want a system reset reason we need to save it on flash
     SOAR_PRINT("Current System Heap Use: %d Bytes\n", xPortGetFreeHeapSize());
     SOAR_PRINT("Lowest Ever Heap Size: %d Bytes\n\n", xPortGetMinimumEverFreeHeapSize());

@@ -14,7 +14,6 @@
 #include "GPIO.hpp"
 #include "FlashTask.hpp"
 #include "WatchdogTask.hpp"
-#include "MEVManager.hpp"
 /* Rocket State Machine ------------------------------------------------------------------*/
 /**
  * @brief Default constructor for Rocket SM, initializes all states
@@ -183,11 +182,8 @@ PreLaunch::PreLaunch()
 RocketState PreLaunch::OnEnter()
 {
     // Close the vent and drain
-    GPIO::Drain::Close();
-    GPIO::Vent::Close();
 
     // Make sure the MEV is closed
-    MEVManager::MEV_CLOSE();
 
     PBBRxProtocolTask::SendFastLogCommand(Proto::FastLog::FastLogCommand::FL_RESET);
     PBBRxProtocolTask::SendFastLogCommand(Proto::FastLog::FastLogCommand::FL_RESET);
@@ -224,33 +220,45 @@ RocketState PreLaunch::HandleNonIgnitionCommands(RocketControlCommands rcAction,
     case RSC_ANY_TO_ABORT:
         // Transition to abort state
         return RS_ABORT;
-    case RSC_OPEN_VENT:
-        GPIO::Vent::Open();
-        // SOAR_PRINT("Vents were opened in [ %s ] state\n", StateToString(currentState));
+    case RSC_OPEN_SOL_10:
+        GPIO::SOL10::Open();
+        // SOAR_PRINT("SOL 10 was opened in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_CLOSE_VENT:
-        GPIO::Vent::Close();
-        // SOAR_PRINT("Vents were closed in [ %s ] state\n", StateToString(currentState));
+    case RSC_CLOSE_SOL_10:
+        GPIO::SOL10::Close();
+        // SOAR_PRINT("SOL 10 was closed in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_OPEN_DRAIN:
-        GPIO::Drain::Open();
-        // SOAR_PRINT("Drain was opened in [ %s ] state\n", StateToString(currentState));
+    case RSC_OPEN_SOL_11:
+        GPIO::SOL11::Open();
+        // SOAR_PRINT("SOL 11 was opened in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_CLOSE_DRAIN:
-        GPIO::Drain::Close();
-        // SOAR_PRINT("Drain was closed in [ %s ] state\n", StateToString(currentState));
+    case RSC_CLOSE_SOL_11:
+        GPIO::SOL11::Close();
+        // SOAR_PRINT("SOL 11 was closed in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_MEV_CLOSE:
-        MEVManager::MEV_CLOSE();
+    case RSC_OPEN_SOL_12:
+        GPIO::SOL12::Open();
+        // SOAR_PRINT("SOL 12 was opened in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_POWER_TRANSITION_EXTERNAL:
-        GPIO::PowerSelect::UmbilicalPower();
-        // SOAR_PRINT("Switched to umbilical power in [ %s ] state\n", StateToString(currentState));
-        //TODO: we should check to make sure umbilical power is available before doing so
+    case RSC_CLOSE_SOL_12:
+        GPIO::SOL12::Close();
+        // SOAR_PRINT("SOL 12 was closed in [ %s ] state\n", StateToString(currentState));
         break;
-    case RSC_POWER_TRANSITION_ONBOARD:
-        GPIO::PowerSelect::InternalPower();
-        // SOAR_PRINT("Switched to internal power in [ %s ] state\n", StateToString(currentState));
+    case RSC_OPEN_SOL_13:
+        GPIO::SOL13::Open();
+        // SOAR_PRINT("SOL 13 was opened in [ %s ] state\n", StateToString(currentState));
+        break;
+    case RSC_CLOSE_SOL_13:
+        GPIO::SOL13::Close();
+        // SOAR_PRINT("SOL 13 was closed in [ %s ] state\n", StateToString(currentState));
+        break;
+    case RSC_OPEN_SOL_14:
+        GPIO::SOL14::Open();
+        // SOAR_PRINT("SOL 14 was opened in [ %s ] state\n", StateToString(currentState));
+        break;
+    case RSC_CLOSE_SOL_14:
+        GPIO::SOL14::Close();
+        // SOAR_PRINT("SOL 14 was closed in [ %s ] state\n", StateToString(currentState));
         break;
     default:
         break;
@@ -319,11 +327,10 @@ Fill::Fill()
 RocketState Fill::OnEnter()
 {
     // Assert the vent and drain are closed
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
+
 
     // Make sure the MEV is closed
-    MEVManager::MEV_CLOSE();
+
 
     // Clear the arm flags
     for (uint8_t i = 0; i < 2; i++)
@@ -411,14 +418,7 @@ Arm::Arm()
 RocketState Arm::OnEnter()
 {
     // Assert the vent and drain are closed
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
 
-    // Ensure MEV is closed
-	MEVManager::MEV_CLOSE();
-
-    // Switch to internal power
-	GPIO::PowerSelect::InternalPower();
 
     return rsStateID;
 }
@@ -484,9 +484,7 @@ Ignition::Ignition()
 RocketState Ignition::OnEnter()
 {
     // Assert vent and drain closed, and MEV closed
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
-    MEVManager::MEV_CLOSE();
+
     PBBRxProtocolTask::SendFastLogCommand(Proto::FastLog::FastLogCommand::FL_PEND);
     PBBRxProtocolTask::SendFastLogCommand(Proto::FastLog::FastLogCommand::FL_PEND);
 
@@ -557,9 +555,7 @@ Launch::Launch()
 RocketState Launch::OnEnter()
 {
     // Assert vent and drain closed, MEV open
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
-    MEVManager::MEV_OPEN();
+
     TimerTransitions::Inst().BurnSequence();
     PBBRxProtocolTask::SendFastLogCommand(Proto::FastLog::FastLogCommand::FL_START);
     return rsStateID;
@@ -622,21 +618,7 @@ Burn::Burn()
  */
 RocketState Burn::OnEnter()
 {
-    // TODO: Debug print - can remove in final versions
-    if (GPIO::Vent::IsOpen()) {
-        // SOAR_PRINT("Vents were not closed in [ %s ] state\n", StateToString(rsStateID));
-    }
-    if (GPIO::Drain::IsOpen()) {
-        // SOAR_PRINT("Drain was not closed in [ %s ] state\n", StateToString(rsStateID));
-    }
 
-    // Assert vent/drain state
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
-
-    // Turn off the MEV power
-    //TODO: Make sure the MEV is fully open before turning off power!
-    MEVManager::MEV_CLOSE();
 
     // Start the coast transition timer (7 seconds - TBD based on sims)
     TimerTransitions::Inst().CoastSequence();
@@ -701,12 +683,7 @@ Coast::Coast()
  */
 RocketState Coast::OnEnter()
 {
-    // Assert vent/drain state
-    GPIO::Vent::Close();
-    GPIO::Drain::Close();
 
-    // Assert MEV power
-    MEVManager::MEV_CLOSE();
 
     // Start Descent Transition Timer (~25 seconds) : Should be well after apogee
 	TimerTransitions::Inst().DescentSequence();
@@ -770,15 +747,6 @@ Descent::Descent()
  */
 RocketState Descent::OnEnter()
 {
-    // Open the vent and drain
-    GPIO::Vent::Open();
-    GPIO::Drain::Open();
-
-    // Assert MEV power
-    MEVManager::MEV_CLOSE();
-
-    // SOAR_PRINT("Vents were opened in [ %s ] state\n", StateToString(rsStateID));
-    // SOAR_PRINT("Drain was opened in [ %s ] state\n", StateToString(rsStateID));
 
     // Start Recovery Transition Timer (~300 seconds) : Should be well into / after descent
     TimerTransitions::Inst().RecoverySequence();
@@ -843,12 +811,7 @@ Recovery::Recovery()
  */
 RocketState Recovery::OnEnter()
 {
-    // Assert vent and drain are open
-    GPIO::Vent::Open();
-    GPIO::Drain::Open();
 
-    // Make sure MEV power is off
-    MEVManager::MEV_CLOSE();
     
     //TODO: Consider adding periodic AUTO-VENT timers every 100 seconds to make sure they're open)
     //TODO: Send out GPS and GPIO Status (actually should be happening always anyway)
@@ -909,10 +872,7 @@ Abort::Abort()
  */
 RocketState Abort::OnEnter()
 {
-    // Make sure the MEV closed and vents are open
-	GPIO::Vent::Open();
-	GPIO::Drain::Open();
-    MEVManager::MEV_CLOSE();
+
     return rsStateID;
 }
 
@@ -983,7 +943,7 @@ RocketState Test::OnEnter()
  */
 RocketState Test::OnExit()
 {
-	MEVManager::MEV_CLOSE();
+//	MEVManager::MEV_CLOSE();
     return rsStateID;
 }
 
@@ -1001,16 +961,6 @@ RocketState Test::HandleCommand(Command& cm)
         switch (cm.GetTaskCommand()) {
         case RSC_GOTO_PRELAUNCH:
             nextStateID = RS_PRELAUNCH;
-            break;
-        case RSC_TEST_MEV_OPEN: // Send the open command
-            MEVManager::MEV_OPEN();
-            break;
-        case RSC_MEV_CLOSE: // Send the close command
-            MEVManager::MEV_CLOSE();
-            break;
-        case RSC_TEST_MEV_ENABLE:
-            break;
-        case RSC_TEST_MEV_DISABLE:
             break;
         default:
             nextStateID = PreLaunch::HandleNonIgnitionCommands((RocketControlCommands)cm.GetTaskCommand(), GetStateID());
